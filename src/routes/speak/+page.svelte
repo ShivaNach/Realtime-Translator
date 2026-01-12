@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount, onDestroy } from "svelte";
-
+    import { goto } from "$app/navigation"
     let isRecording = $state(false)
     let transcript = $state("")
     let nonInterimTranscript = $state("")
@@ -15,7 +15,10 @@
 
         ws.onopen = () => console.log('Connected to WS server');
         ws.onclose = () => console.log('Disconnected from WS server');
-        ws.onerror = (event: Event) => console.error('WS error:', event);
+        ws.onerror = (event: Event) => {
+            console.error('WS error:', event);
+            goto('/error?msg=Websocket+connection+failed');
+        };
         ws.onmessage = (event: MessageEvent<string>) => {
         const data = JSON.parse(event.data);
 
@@ -49,9 +52,20 @@
         }));
     }
 
-    // ------------------------------------
-    // Speech Recognition
-    // ------------------------------------
+
+    async function checkMicrophone() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            stream.getTracks().forEach(track => track.stop()); 
+            console.log('Microphone access granted');
+            return true;
+        } catch (err) {
+            console.error('Microphone access denied', err);
+            return false;
+        }
+    }
+
+
     async function handleRecord() {
         const SpeechRec =
             (window as any).SpeechRecognition ||
@@ -59,9 +73,15 @@
 
         if (!SpeechRec) {
             alert("Speech recognition not supported")
+            goto('/error?msg=Speech+recognition+not+supported+in+this+browser');
             return
         }
-
+        const hasMic = await checkMicrophone()
+        if (!hasMic) {
+            alert("Microphone access is required")
+            goto('/error?msg=Microphone+access+is+required');
+            return
+        }
         if (!isRecording) {
             recognition = new SpeechRec()
             recognition.lang = "en-US"

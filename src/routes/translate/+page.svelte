@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from "$app/navigation";
   import { untrack } from "svelte";
   import { onMount, onDestroy } from "svelte";
 
@@ -26,9 +27,10 @@
         }
     };
 
-    ws.onerror = (event: Event) =>
+    ws.onerror = (event: Event) => {
       console.error("WS error:", event);
-
+      goto('/error?msg=Websocket+connection+failed');
+    }
     ws.onclose = () => console.log("Disconnected from WS server");
   });
 
@@ -40,6 +42,7 @@
   onMount(async () => {
     if (!("Translator" in window)) {
       console.error("Translator API not available");
+      goto("/error?msg=Translator+API+not+available");
       return;
     }
 
@@ -68,6 +71,7 @@
           translatedTranscript = await translator.translate(transcript);
         } catch (error) {
           console.error("Translation error:", error);
+          goto("/error?msg=Translation+failed");
         }
       })();
     });
