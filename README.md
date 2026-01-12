@@ -2,7 +2,7 @@
 
 A realtime speech-to-speech translation demo built to showcase handling **asynchronous workflows**, **WebSockets**, and **Web APIs** in a modern web application.
 
-The app allows one user to speak in a source language while another user sees the **live transcription** and **near-realtime translation** in a target language.
+The app allows one user to speak in a source language (for this mvp English) while another user sees the **live transcription** and **near-realtime translation** in a target language (for this mvp Tamil).
 
 ---
 
